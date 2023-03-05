@@ -1,0 +1,28 @@
+{
+    "relativeDirections": [
+        0.2126984126984127,
+        0.692063492063492
+    ],
+    "current_direction": 0,
+    "CONST_CAMERA_PIXEL_WIDTH": 315,
+    "blocks": [
+        {
+            "x_pos": 67,
+            "y_pos": 150,
+            "direction": -18.674603174603174,
+            "size": 416
+        },
+        {
+            "x_pos": 218,
+            "y_pos": 139,
+            "direction": 12.484126984126982,
+            "size": 120
+        }
+    ],
+    "blockDirectionDiffs": [
+        -18.674603174603174,
+        12.484126984126982
+    ],
+    "CONST_CAMERA_DIRECTION_WIDTH": 65,
+    "rawData": "[175, 193, 33, 28, 93, 4, 1, 0, 67, 0, 150, 0, 26, 0, 16, 0, 0, 0, 73, 255]|\n[1, 0, 218, 0, 139, 0, 24, 0, 5, 0, 0, 0, 14, 128]"
+}

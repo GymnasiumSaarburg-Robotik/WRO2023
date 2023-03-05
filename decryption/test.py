@@ -1,4 +1,4 @@
-from decryption.api import capture
+from decryption.api import Capture
 
 data = [1, 1, 0, 24, 1, 88, 0, 28, 0, 23]
 summed_data = []

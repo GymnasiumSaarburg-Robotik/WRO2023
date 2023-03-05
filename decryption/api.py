@@ -6,17 +6,25 @@ from json import JSONDecoder
 from decryption.block import CCblock
 
 
-class capture:
-    def __init__(self, raw_data, current_direction):
-        self.CONST_CAMERA_DIRECTION_WIDTH = 65  # Einstellen bezüglich Drehung
-        self.CONST_CAMERA_PIXEL_WIDTH = 315  # Camera image is 319px
+class Capture:
+    def __init__(self, raw_data: str = None, blocks=None, current_direction: int = None,
+                 generate_missing_params: bool = True):
+        if blocks is None:
+            blocks = []
+        if current_direction is None:
+            current_direction = []
 
-        self.rawData = raw_data
-        self.blocks = []
-        self.blockDirectionDiffs = []
-        self.relativeDirections = []
+        self.CONST_CAMERA_DIRECTION_WIDTH = 65  # Einstellen bezüglich Drehung
+        self.CONST_CAMERA_PIXEL_WIDTH = 319  # Camera image is 319px
+
+        self.blocks = blocks
         self.current_direction = current_direction
-        self.decrypt_data(current_direction)
+        self.rawData = raw_data
+
+        self.blockDirectionDiffs = []
+
+        if raw_data is not None and generate_missing_params:
+            self.decrypt_data(current_direction)
 
     def decrypt_data(self, current_direction):
         try:
@@ -52,10 +60,11 @@ class capture:
                     y_center = summed_data[base_index - 2]
                     width = summed_data[base_index - 1]
                     height = summed_data[base_index]
+                    x_pos = x_center - width / 2
+                    y_pos = y_center - height / 2
 
                     # Relative Position im Bild [<0.5; 0.5; >0.5]
                     relative_direction = x_center / self.CONST_CAMERA_PIXEL_WIDTH
-                    self.relativeDirections.append(relative_direction)
                     direction_offset = 0
                     if relative_direction > 0.5:
                         relative_direction -= 0.5
@@ -64,15 +73,29 @@ class capture:
                         relative_direction = 0.5 - relative_direction
                         direction_offset = -1 * relative_direction * self.CONST_CAMERA_DIRECTION_WIDTH
 
-                    block_object = CCblock(int(x_center), int(y_center), int(width * height), direction_offset)
+                    block_object = CCblock(int(x_pos), int(y_pos), int(x_center), int(y_center), int(width),
+                                           int(height), int(width * height), direction_offset)
                     self.blocks.append(block_object)
                     self.blockDirectionDiffs.append(direction_offset)
         except True:  # Catch any exception
             print("Data could not be resolved.")
             return
 
+    def __str__(self) -> str:
+        return "CAPTURE: \n     rawData: {} \n      blocks {} \n      current_direction {}" \
+            .format(self.rawData, self.blocks, self.current_direction)
 
-# subclass JSONEncoder
+    def generate_bit_map(self):
+        image = [[0 for _ in range(325)] for _ in range(225)]
+        for block in self.blocks:
+            b: CCblock = block
+            for y in range(b.y_pos, b.y_pos + b.height):
+                for x in range(b.x_pos, b.x_pos + b.width):
+                    line = image[y]
+                    line[x] = 1
+        return image
+
+
 class CaptureEncoder(JSONEncoder):
     def default(self, o):
         return o.__dict__
@@ -83,7 +106,11 @@ class CaptureDecoder(JSONDecoder):
         json.JSONDecoder.__init__(self, object_hook=self.object_hook, *args, **kwargs)
 
     def object_hook(self, dct):
-        return capture(dct['rawData'])
+        if 'rawData' in dct:
+            return Capture(raw_data=dct['rawData'], blocks=dct['blocks'], current_direction=dct['current_direction'],
+                           generate_missing_params=False)
+        if 'x_pos' in dct:
+            return CCblock(dct['x_pos'], dct['y_pos'], dct['size'], dct['direction'])
 
 
 def only_contains_one_element(data):
@@ -115,4 +142,4 @@ class direction_data:
             if only_contains_one_element(block2):
                 break
             data += "|\n" + str(block2)
-        self.captures.append(capture(data, current_direction))
+        self.captures.append(Capture(data, current_direction))

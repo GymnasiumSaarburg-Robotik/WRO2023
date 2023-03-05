@@ -1,4 +1,4 @@
-from decryption.api import capture, direction_data
+from decryption.api import Capture, direction_data
 
 from constants.constants import constants
 
@@ -20,7 +20,7 @@ def readBlocks(current_direction):
         if only_contains_one_element(block2):
             break
         data += "|\n" + str(block2)
-    return capture(data, current_direction)
+    return Capture(data, current_direction)
 
 
 c = constants()
