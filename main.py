@@ -7,7 +7,7 @@ def only_contains_one_element(data):
     return len(set(data)) == 1
 
 
-def readBlocks(current_direction):
+def read_blocks(current_direction):
     data = [174, 193, 32, 2, 255, 255]
     c.BUS.write_i2c_block_data(c.CAMERA_ADDRESS, 0, data)
     # Read first block

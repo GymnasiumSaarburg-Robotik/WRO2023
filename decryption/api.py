@@ -15,7 +15,11 @@ class Capture:
             current_direction = []
 
         self.CONST_CAMERA_DIRECTION_WIDTH = 65  # Einstellen bezüglich Drehung
-        self.CONST_CAMERA_PIXEL_WIDTH = 319  # Camera image is 319px
+        self.CONST_CAMERA_PIXEL_WIDTH = 319
+
+        # Camera image is 319px
+        # https://forum.pixycam.com/t/resolution-tracking-pixy2/5646
+        # -> Claiming 316 x 208
 
         self.blocks = blocks
         self.current_direction = current_direction
