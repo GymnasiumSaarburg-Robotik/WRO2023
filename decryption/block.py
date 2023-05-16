@@ -11,15 +11,15 @@ class CCblock:
         if y_center is not None:
             self.y_center = y_center
 
-        if width is not None:
-            self.width = width
-        if height is not None:
-            self.height = height
+        #if width is not None:
+        #    self.width = width
+        #if height is not None:
+        #    self.height = height
 
-        if width is None:
-            self.width = int(math.sqrt(size))
-        if height is None:
-            self.height = int(math.sqrt(size))
+        #if width is None:
+        self.width = abs(int(math.sqrt(size)))
+        #if height is None:
+        self.height = abs(int(math.sqrt(size)))
 
         if x_pos is None:
             self.x_center = x_center - self.width
@@ -30,7 +30,7 @@ class CCblock:
         self.direction = direction
 
     def __str__(self) -> str:
-        return "Block({}, {}, size: {}, direction: {})".format(self.x_pos, self.y_pos, self.size, self.direction)
+        return "Block({}, {}, size: {}, direction: {}, width {}, height {})".format(self.x_pos, self.y_pos, self.size, self.direction, self.width, self.height)
 
     def __unicode__(self) -> str:
         return "Block({}, {}, size: {}, direction: {})".format(self.x_pos, self.y_pos, self.size, self.direction)

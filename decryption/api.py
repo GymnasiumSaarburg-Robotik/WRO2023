@@ -7,7 +7,7 @@ from decryption.block import CCblock
 
 
 class Capture:
-    def __init__(self, raw_data: str = None, blocks=None, current_direction: int = None,
+    def __init__(self, raw_data: str = None, current_direction: int = None, blocks=None,
                  generate_missing_params: bool = True):
         if blocks is None:
             blocks = []
@@ -92,11 +92,11 @@ class Capture:
     def generate_bit_map(self):
         image = [[0 for _ in range(325)] for _ in range(225)]
         for block in self.blocks:
-            b: CCblock = block
-            for y in range(b.y_pos, b.y_pos + b.height):
+            b = block
+            print(str(block))
+            for y in range(b.y_pos, b.y_pos + int(b.height)):
                 for x in range(b.x_pos, b.x_pos + b.width):
-                    line = image[y]
-                    line[x] = 1
+                    image[y][x] = 1
         return image
 
 
@@ -116,9 +116,71 @@ class CaptureDecoder(JSONDecoder):
         if 'x_pos' in dct:
             return CCblock(dct['x_pos'], dct['y_pos'], dct['size'], dct['direction'])
 
+def print_two_d_array(arr):
+    for r in arr:
+        print(str(r))
 
 def only_contains_one_element(data):
     return len(set(data)) == 1
+
+def combine_bit_maps(bitmap1, bitmap2, limit):
+    average_bitmap = [[((bitmap1[a][b] + bitmap2[a][b]) / limit) for b in range(len(bitmap1[0]))] for a in
+                      range(len(bitmap1))]
+    return average_bitmap
+
+def filter_and_convert_to_bitmap(arr, min_val):
+    bitmap = []
+    for subarr in arr:
+        sub_bitmap = []
+        for val in subarr:
+            if val >= min_val:
+                sub_bitmap.append(1)
+            else:
+                sub_bitmap.append(0)
+        bitmap.append(sub_bitmap)
+    return bitmap
+
+def get_square_bitmap(bitmap):
+    # Initialize variables
+    height = len(bitmap)
+    width = len(bitmap[0])
+    square_bitmap = [[0] * width for _ in range(height)]
+    rectangles = []
+
+    # Define helper function to draw a filled square in the square_bitmap
+    def draw_square(x, y, size):
+        for i in range(x, x + size):
+            for j in range(y, y + size):
+                square_bitmap[j][i] = 1
+
+    # Define helper function to find the boundaries of a rectangle
+    def find_boundary(x, y):
+        left, right, up, down = x, x, y, y
+        stack = [(x, y)]
+        while stack:
+            i, j = stack.pop()
+            if i < 0 or j < 0 or i >= width or j >= height or bitmap[j][i] == 0:
+                continue
+            bitmap[j][i] = 0  # mark pixel as visited
+            left = min(left, i)
+            right = max(right, i)
+            up = min(up, j)
+            down = max(down, j)
+            stack.append((i - 1, j))
+            stack.append((i + 1, j))
+            stack.append((i, j - 1))
+            stack.append((i, j + 1))
+        return left, right, up, down
+
+    # Iterate through each pixel in the bitmap and find the boundaries of each rectangle
+    for i in range(width):
+        for j in range(height):
+            if bitmap[j][i] == 1:
+                left, right, up, down = find_boundary(i, j)
+                size = max(right - left + 1, down - up + 1)
+                draw_square(left, up, size)
+
+    return square_bitmap
 
 
 class direction_data:
@@ -126,8 +188,6 @@ class direction_data:
         self.c = constants
         self.captures = []
         self.initialize(10, direction)
-        for s in self.captures:
-            print(json.dumps(s, indent=4, cls=CaptureEncoder))
 
     def initialize(self, frame_count, direction):
         for i in range(frame_count):
@@ -146,4 +206,6 @@ class direction_data:
             if only_contains_one_element(block2):
                 break
             data += "|\n" + str(block2)
-        self.captures.append(Capture(data, current_direction))
+        capture = Capture(data, current_direction)
+        print(len(capture.blocks))
+        self.captures.append(capture)
